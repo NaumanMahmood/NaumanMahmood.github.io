@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#0b1412">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Zikr Voice Counter</title>
+<style>
+  :root{
+    --bg:#0b1412; --panel:#13201d; --panel2:#1a2b27; --line:#24403a;
+    --text:#e9f2ef; --muted:#8fa8a1; --accent:#34d399; --accent2:#fbbf24; --danger:#f87171;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:var(--bg);color:var(--text);font:16px/1.4 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+  body{min-height:100vh;display:flex;flex-direction:column;max-width:560px;margin:0 auto;padding:12px 14px 24px}
+  header{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  h1{font-size:17px;margin:0;font-weight:600;letter-spacing:.2px}
+  .iconbtn{background:var(--panel);border:1px solid var(--line);color:var(--text);border-radius:12px;padding:8px 12px;font-size:15px}
+  .status{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:14px;margin:10px 2px 4px}
+  .dot{width:11px;height:11px;border-radius:50%;background:#4b5d58;flex:none;transition:background .08s}
+  .dot.on{background:var(--accent);box-shadow:0 0 10px var(--accent)}
+  .dot.paused{background:var(--accent2)}
+  .meter{position:relative;height:14px;background:var(--panel);border:1px solid var(--line);border-radius:8px;overflow:hidden;margin:4px 0 12px}
+  .meter .fill{position:absolute;inset:0 auto 0 0;width:0;background:linear-gradient(90deg,#1f7a5a,var(--accent));transition:width .05s linear}
+  .meter .mark{position:absolute;top:0;bottom:0;width:2px}
+  .meter .noise{background:#8fa8a1}
+  .meter .thr{background:var(--accent2)}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:18px 16px;text-align:center;user-select:none;touch-action:manipulation}
+  .arabic{font-family:"Amiri","Scheherazade New","Noto Naskh Arabic","Geeza Pro",serif;direction:rtl;font-size:34px;line-height:1.5;min-height:52px}
+  .label{color:var(--muted);font-size:15px;margin-top:2px}
+  .count{font-size:min(34vw,170px);font-weight:700;line-height:1;margin:10px 0 2px;font-variant-numeric:tabular-nums;transition:color .15s}
+  .count.flash{color:var(--accent)}
+  .target{color:var(--muted);font-size:17px}
+  .bar{height:8px;background:var(--panel2);border-radius:6px;margin:12px 4px 4px;overflow:hidden}
+  .bar>div{height:100%;width:0;background:var(--accent);transition:width .2s}
+  .hint{color:var(--muted);font-size:12px;margin-top:8px}
+  .row{display:flex;gap:10px;margin-top:12px}
+  .row button{flex:1}
+  button{font:inherit;cursor:pointer}
+  .btn{background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:14px;padding:14px 8px;font-size:17px}
+  .btn:active{transform:scale(.98)}
+  .main{margin-top:14px;width:100%;border:none;border-radius:18px;padding:22px 10px;font-size:21px;font-weight:700;background:var(--accent);color:#052e21}
+  .main.stop{background:var(--danger);color:#3b0909}
+  .sub{color:var(--muted);font-size:13px;text-align:center;margin-top:8px;min-height:18px}
+  .rounds{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:12px}
+  .chip{background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:5px 10px;font-size:13px;color:var(--muted)}
+  .chip.cur{border-color:var(--accent);color:var(--text)}
+  .chip.done{color:var(--accent)}
+  /* sheet */
+  .sheet{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:flex-end;justify-content:center;z-index:10}
+  .sheet.open{display:flex}
+  .sheet .inner{background:var(--bg);border:1px solid var(--line);border-bottom:none;border-radius:20px 20px 0 0;width:100%;max-width:560px;max-height:92vh;overflow:auto;padding:16px}
+  .sheet h2{font-size:17px;margin:4px 0 12px;display:flex;justify-content:space-between;align-items:center}
+  .sheet h3{font-size:14px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin:18px 0 8px}
+  .item{display:grid;grid-template-columns:1fr 74px 36px;gap:6px;margin-bottom:8px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:8px}
+  .item input{width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:8px;font:inherit}
+  .item .ar{grid-column:1/4;direction:rtl;font-family:"Amiri","Noto Naskh Arabic",serif;font-size:20px}
+  .item .del{background:none;border:none;color:var(--danger);font-size:20px}
+  .set{margin:12px 0}
+  .set label{display:flex;justify-content:space-between;font-size:15px}
+  .set label span{color:var(--accent2);font-variant-numeric:tabular-nums}
+  .set small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+  input[type=range]{width:100%;accent-color:var(--accent)}
+  select{background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:6px;font:inherit}
+  .check{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:12px 0;font-size:15px}
+  .check input{width:22px;height:22px;accent-color:var(--accent);flex:none}
+  .check small{display:block;color:var(--muted);font-size:12px}
+  .err{background:#3b1414;border:1px solid #7f1d1d;color:#fecaca;border-radius:12px;padding:10px 12px;margin-top:10px;font-size:14px;display:none}
+</style>
+</head>
+<body>
+<header>
+  <h1>Zikr Voice Counter</h1>
+  <div style="display:flex;gap:8px">
+    <button class="iconbtn" id="listBtn" aria-label="Edit zikr list">☰ List</button>
+    <button class="iconbtn" id="setBtn" aria-label="Settings">⚙︎</button>
+  </div>
+</header>
+
+<div class="status"><span class="dot" id="dot"></span><span id="statusText">Not listening</span></div>
+<div class="meter" title="Mic level"><div class="fill" id="fill"></div><div class="mark noise" id="noiseMark"></div><div class="mark thr" id="thrMark"></div></div>
+
+<div class="card" id="card">
+  <div class="arabic" id="arabic"></div>
+  <div class="label" id="label"></div>
+  <div class="count" id="count">0</div>
+  <div class="target" id="target"></div>
+  <div class="bar"><div id="bar"></div></div>
+  <div class="hint">Tap here to add 1 manually</div>
+</div>
+
+<div class="row">
+  <button class="btn" id="minus">−1</button>
+  <button class="btn" id="prev">◀ Prev</button>
+  <button class="btn" id="next">Next ▶</button>
+  <button class="btn" id="reset">Reset</button>
+</div>
+
+<button class="main" id="main">🎙 Start listening</button>
+<div class="sub" id="sub">Leave a short breath between repetitions.</div>
+<div class="err" id="err"></div>
+<div class="rounds" id="rounds"></div>
+
+<!-- List sheet -->
+<div class="sheet" id="listSheet"><div class="inner">
+  <h2>Zikr list <button class="iconbtn" data-close>Done</button></h2>
+  <div id="items"></div>
+  <div class="row"><button class="btn" id="addItem">+ Add zikr</button><button class="btn" id="resetAll">Reset all counts</button></div>
+</div></div>
+
+<!-- Settings sheet -->
+<div class="sheet" id="setSheet"><div class="inner">
+  <h2>Settings <button class="iconbtn" data-close>Done</button></h2>
+  <h3>Detection</h3>
+  <div class="set"><label>Sensitivity <span id="sensV"></span></label>
+    <input type="range" id="sens" min="4" max="24" step="1">
+    <small>How much louder than the background your voice must be (dB). Lower = more sensitive. Raise it if road noise gets counted.</small></div>
+  <div class="set"><label>Pause between repetitions <span id="gapV"></span></label>
+    <input type="range" id="gap" min="150" max="1500" step="50">
+    <small>Silence needed to finish one repetition. If one phrase is counted twice, increase this. If two phrases are counted as one, decrease it.</small></div>
+  <div class="set"><label>Minimum phrase length <span id="minV"></span></label>
+    <input type="range" id="minLen" min="100" max="1500" step="50">
+    <small>Sounds shorter than this (coughs, clicks, indicator ticks) are ignored.</small></div>
+  <label class="check"><div>Phone noise suppression<small>Uses Android's built-in voice filter — usually helps in a car. Restart listening to apply.</small></div><input type="checkbox" id="ns"></label>
+  <label class="check"><div>Count run-together phrases<small>If you don't pause between repetitions, estimates how many were said using your usual phrase length. Can overcount; leave off if you pause.</small></div><input type="checkbox" id="split"></label>
+  <h3>Feedback</h3>
+  <label class="check"><div>Short beep every<small>A quick chime so you can keep track without looking.</small></div>
+    <select id="beepEvery"><option value="0">Off</option><option>1</option><option>5</option><option>10</option><option>25</option><option>33</option><option>50</option></select></label>
+  <label class="check"><div>Speak the count every<small>Listening pauses while it speaks, so repetitions said over it are missed.</small></div>
+    <select id="speakEvery"><option value="0">Off</option><option>10</option><option>25</option><option>33</option><option>50</option></select></label>
+  <label class="check"><div>Announce when target is reached</div><input type="checkbox" id="speakTarget"></label>
+  <label class="check"><div>Move to next zikr at target<small>Off = keep counting past the target.</small></div><input type="checkbox" id="autoNext"></label>
+  <label class="check"><div>Vibrate on each count</div><input type="checkbox" id="vibrate"></label>
+</div></div>
+
+<script>
+(() => {
+'use strict';
+const $ = id => document.getElementById(id);
+const store = {
+  get(k, d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+};
+
+const DEFAULT_ITEMS = [
+  {ar:'سُبْحَانَ ٱللَّٰهِ', name:'SubhanAllah', target:100, count:0},
+  {ar:'ٱلْحَمْدُ لِلَّٰهِ', name:'Alhamdulillah', target:100, count:0},
+  {ar:'ٱللَّٰهُ أَكْبَرُ', name:'Allahu Akbar', target:100, count:0},
+  {ar:'أَسْتَغْفِرُ ٱللَّٰهَ', name:'Astaghfirullah', target:100, count:0},
+  {ar:'لَا إِلَٰهَ إِلَّا ٱللَّٰهُ', name:'La ilaha illallah', target:100, count:0},
+];
+const DEFAULT_SET = {sens:10, gap:400, minLen:250, ns:true, split:false, beepEvery:10, speakEvery:0, speakTarget:true, autoNext:true, vibrate:false};
+
+let items = store.get('zv_items', DEFAULT_ITEMS);
+let cur = store.get('zv_cur', 0);
+let S = Object.assign({}, DEFAULT_SET, store.get('zv_set', {}));
+if(!Array.isArray(items) || !items.length) items = DEFAULT_ITEMS.map(x=>({...x}));
+if(cur >= items.length) cur = 0;
+
+const save = () => { store.set('zv_items', items); store.set('zv_cur', cur); store.set('zv_set', S); };
+
+// ---------- UI ----------
+function render(){
+  const it = items[cur];
+  $('arabic').textContent = it.ar || '';
+  $('label').textContent = it.name || '';
+  $('count').textContent = it.count;
+  $('target').textContent = it.target ? `of ${it.target}` : 'no target';
+  $('bar').style.width = it.target ? Math.min(100, it.count / it.target * 100) + '%' : '0';
+  const r = $('rounds'); r.innerHTML = '';
+  items.forEach((x, i) => {
+    const c = document.createElement('span');
+    c.className = 'chip' + (i === cur ? ' cur' : '') + (x.target && x.count >= x.target ? ' done' : '');
+    c.textContent = `${x.name || x.ar}: ${x.count}${x.target ? '/' + x.target : ''}`;
+    c.onclick = () => { cur = i; save(); render(); };
+    r.appendChild(c);
+  });
+}
+function flash(){ const c = $('count'); c.classList.add('flash'); clearTimeout(flash.t); flash.t = setTimeout(()=>c.classList.remove('flash'), 180); }
+
+// ---------- Audio feedback ----------
+let actx = null;
+function beep(freq=880, dur=0.07, when=0, vol=0.25){
+  if(!actx) return;
+  const t = actx.currentTime + when, o = actx.createOscillator(), g = actx.createGain();
+  o.type = 'sine'; o.frequency.value = freq;
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t+0.01); g.gain.exponentialRampToValueAtTime(0.0001, t+dur);
+  o.connect(g).connect(actx.destination); o.start(t); o.stop(t+dur+0.02);
+}
+let pausedUntil = 0, speaking = false;
+function say(text, after){
+  if(!('speechSynthesis' in window)){ after && after(); return; }
+  try{
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'en-GB'; u.rate = 1.05;
+    speaking = true; setStatus();
+    const done = () => { speaking = false; pausedUntil = performance.now() + 500; setStatus(); after && after(); };
+    u.onend = done; u.onerror = done;
+    speechSynthesis.speak(u);
+    setTimeout(()=>{ if(speaking) done(); }, 8000); // safety
+  }catch(e){ speaking = false; after && after(); }
+}
+
+// ---------- Counting ----------
+function add(n, source){
+  const it = items[cur];
+  for(let k = 0; k < n; k++){
+    it.count++;
+    const c = it.count;
+    if(it.target && c === it.target){
+      save(); render(); flash();
+      beep(660,0.12,0); beep(880,0.12,0.13); beep(1100,0.2,0.26);
+      const nextIdx = (cur + 1 < items.length) ? cur + 1 : -1;
+      if(S.autoNext && nextIdx >= 0){
+        const nx = items[nextIdx];
+        if(S.speakTarget) say(`${c} done. Next, ${nx.name || 'next zikr'}.`);
+        cur = nextIdx; save(); render();
+        // remaining increments (run-together) roll into the next zikr
+        if(n - k - 1 > 0) return add(n - k - 1, source);
+        return;
+      } else if(S.speakTarget){ say(nextIdx < 0 && S.autoNext ? `${c} done. All complete.` : `${c} done.`); }
+      continue;
+    }
+    if(S.speakEvery && c % S.speakEvery === 0 && source === 'voice'){ say(String(c)); }
+    else if(S.beepEvery && c % S.beepEvery === 0){ beep(S.beepEvery === 1 ? 1000 : 880, 0.06); }
+  }
+  if(S.vibrate && navigator.vibrate){ try{ navigator.vibrate(40); }catch(e){} }
+  save(); render(); flash();
+}
+$('card').addEventListener('click', () => { ensureCtx(); add(1, 'tap'); });
+$('minus').onclick = () => { const it = items[cur]; if(it.count > 0){ it.count--; save(); render(); } };
+$('reset').onclick = () => { items[cur].count = 0; save(); render(); };
+$('next').onclick = () => { cur = (cur + 1) % items.length; save(); render(); };
+$('prev').onclick = () => { cur = (cur - 1 + items.length) % items.length; save(); render(); };
+
+// ---------- Voice activity detection ----------
+const FRAME_MS = 10;
+const det = { noise: null, state: 'idle', above: 0, below: 0, segStart: 0, t: 0, durs: [] };
+function resetDet(){ det.noise = null; det.state = 'idle'; det.above = 0; det.below = 0; det.t = 0; det.learn = null; }
+function median(a){ const s = [...a].sort((x,y)=>x-y); return s[Math.floor(s.length/2)]; }
+let lastDb = -100;
+
+function onFrame(db){
+  lastDb = db;
+  det.t += FRAME_MS;
+  db = Math.max(db, -95);
+  if(det.noise === null){ det.noise = db; return; }
+  if(det.t <= 800){ // quick initial learning of the background (robust to speech starting straight away)
+    (det.learn = det.learn || []).push(db);
+    if(det.t > 790){ const s = det.learn.sort((a,b)=>a-b); det.noise = s[Math.floor(s.length * 0.25)]; det.learn = null; }
+    return;
+  }
+  const muted = speaking || performance.now() < pausedUntil || !listening;
+  const on = det.noise + S.sens, off = det.noise + Math.max(3, S.sens - 4);
+
+  if(muted){
+    if(det.state === 'speech'){ det.state = 'idle'; } det.above = 0; det.below = 0;
+    return;
+  }
+  if(det.state === 'idle'){
+    // track background: falls fast, rises slowly (~4 s)
+    if(db < det.noise) det.noise += (db - det.noise) * 0.06;
+    else if(db < on) det.noise += (db - det.noise) * 0.003;
+    else det.noise += (db - det.noise) * 0.0004;
+    det.noise = Math.max(det.noise, -95);
+    if(db > on){ det.above += FRAME_MS; if(det.above >= 40){ det.state = 'speech'; det.segStart = det.t - det.above; det.below = 0; } }
+    else det.above = 0;
+  } else { // speech
+    if(db < off){
+      det.below += FRAME_MS;
+      if(det.below >= S.gap){
+        const dur = (det.t - det.below) - det.segStart;
+        det.state = 'idle'; det.above = 0;
+        endSegment(dur);
+      }
+    } else det.below = 0;
+    // If "speech" never ends, the background got louder (window down, rain) — re-learn it.
+    if(det.t - det.segStart > 12000){ det.noise = db - 2; det.state = 'idle'; det.above = 0; note('Background got louder — re-calibrated'); }
+  }
+}
+function endSegment(dur){
+  if(dur < S.minLen) return;
+  let n = 1;
+  if(det.durs.length >= 5){
+    const m = median(det.durs);
+    if(S.split && dur > 1.6 * m) n = Math.min(6, Math.max(1, Math.round(dur / m)));
+  }
+  if(n === 1){ det.durs.push(dur); if(det.durs.length > 25) det.durs.shift(); }
+  add(n, 'voice');
+}
+
+// ---------- Mic plumbing ----------
+let stream = null, node = null, src = null, listening = false, wakeLock = null;
+function ensureCtx(){
+  if(!actx){ const AC = window.AudioContext || window.webkitAudioContext; actx = new AC(); }
+  if(actx.state === 'suspended') actx.resume();
+  return actx;
+}
+const WORKLET = `
+class Lvl extends AudioWorkletProcessor{
+  constructor(){ super(); this.n = Math.round(sampleRate/100); this.acc = 0; this.k = 0; }
+  process(inp){
+    const ch = inp[0] && inp[0][0];
+    if(ch){ for(let i=0;i<ch.length;i++){ this.acc += ch[i]*ch[i]; if(++this.k >= this.n){ this.port.postMessage(10*Math.log10(this.acc/this.k + 1e-12)); this.acc = 0; this.k = 0; } } }
+    return true;
+  }
+}
+registerProcessor('lvl', Lvl);`;
+
+async function start(){
+  showErr('');
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+    showErr('This browser can’t use the microphone here. Open the page over https:// in Chrome.'); return;
+  }
+  const ctx = ensureCtx();
+  try{
+    stream = await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true, noiseSuppression:!!S.ns, autoGainControl:false, channelCount:1}});
+  }catch(e){
+    showErr('Microphone permission was refused or is unavailable (' + e.name + '). Allow the mic for this site in Chrome’s site settings and try again.'); return;
+  }
+  src = ctx.createMediaStreamSource(stream);
+  const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 150;   // cut engine/road rumble
+  const lp = ctx.createBiquadFilter(); lp.type = 'lowpass';  lp.frequency.value = 3800;  // keep the voice band
+  src.connect(hp).connect(lp);
+  try{
+    const url = URL.createObjectURL(new Blob([WORKLET], {type:'application/javascript'}));
+    await ctx.audioWorklet.addModule(url);
+    node = new AudioWorkletNode(ctx, 'lvl');
+    node.port.onmessage = e => onFrame(e.data);
+    lp.connect(node);
+    const sink = ctx.createGain(); sink.gain.value = 0; node.connect(sink).connect(ctx.destination);
+  }catch(e){
+    // Fallback for older browsers
+    const sp = ctx.createScriptProcessor(1024, 1, 1);
+    const per = Math.round(ctx.sampleRate/100); let acc=0, k=0;
+    sp.onaudioprocess = ev => { const d = ev.inputBuffer.getChannelData(0); for(let i=0;i<d.length;i++){ acc+=d[i]*d[i]; if(++k>=per){ onFrame(10*Math.log10(acc/k+1e-12)); acc=0; k=0; } } };
+    lp.connect(sp); const sink = ctx.createGain(); sink.gain.value = 0; sp.connect(sink).connect(ctx.destination);
+    node = sp;
+  }
+  resetDet(); listening = true; pausedUntil = performance.now() + 600; // ignore the first instant while noise is learnt
+  await keepAwake();
+  setStatus(); uiTick();
+  $('main').textContent = '■ Stop listening'; $('main').classList.add('stop');
+  note('Learning background noise… then just recite.');
+}
+function stop(){
+  listening = false;
+  try{ stream && stream.getTracks().forEach(t => t.stop()); }catch(e){}
+  try{ node && node.disconnect(); src && src.disconnect(); }catch(e){}
+  stream = node = src = null;
+  if(wakeLock){ try{ wakeLock.release(); }catch(e){} wakeLock = null; }
+  $('main').textContent = '🎙 Start listening'; $('main').classList.remove('stop');
+  setStatus(); note('Leave a short breath between repetitions.');
+}
+$('main').onclick = () => listening ? stop() : start();
+
+async function keepAwake(){
+  try{ if('wakeLock' in navigator){ wakeLock = await navigator.wakeLock.request('screen'); } }catch(e){}
+}
+document.addEventListener('visibilitychange', () => {
+  if(document.visibilityState === 'visible' && listening){ keepAwake(); ensureCtx(); }
+});
+
+// ---------- Status + meter ----------
+function setStatus(){
+  const dot = $('dot'); dot.className = 'dot';
+  if(!listening){ $('statusText').textContent = 'Not listening'; return; }
+  if(speaking){ dot.classList.add('paused'); $('statusText').textContent = 'Speaking — listening paused'; return; }
+  if(det.state === 'speech'){ dot.classList.add('on'); $('statusText').textContent = 'Hearing you…'; }
+  else $('statusText').textContent = 'Listening';
+}
+const toPct = db => Math.max(0, Math.min(100, (db + 90) / 80 * 100));
+function uiTick(){
+  if(!listening){ $('fill').style.width = '0'; return; }
+  $('fill').style.width = toPct(lastDb) + '%';
+  if(det.noise !== null){ $('noiseMark').style.left = toPct(det.noise) + '%'; $('thrMark').style.left = toPct(det.noise + S.sens) + '%'; }
+  setStatus();
+  requestAnimationFrame(uiTick);
+}
+function note(t){ $('sub').textContent = t; clearTimeout(note.t); if(t.startsWith('Learning')||t.startsWith('Background')) note.t = setTimeout(()=>{ if(listening) $('sub').textContent = 'Listening — recite with a short pause between each.'; }, 2500); }
+function showErr(t){ const e = $('err'); e.textContent = t; e.style.display = t ? 'block' : 'none'; }
+
+// ---------- Sheets ----------
+function openSheet(id){ $(id).classList.add('open'); }
+document.querySelectorAll('.sheet').forEach(s => {
+  s.addEventListener('click', e => { if(e.target === s || e.target.hasAttribute('data-close')){ s.classList.remove('open'); render(); } });
+});
+$('listBtn').onclick = () => { renderItems(); openSheet('listSheet'); };
+$('setBtn').onclick = () => { renderSettings(); openSheet('setSheet'); };
+
+function renderItems(){
+  const box = $('items'); box.innerHTML = '';
+  items.forEach((it, i) => {
+    const d = document.createElement('div'); d.className = 'item';
+    d.innerHTML = `<input class="ar" placeholder="Arabic text"><input class="nm" placeholder="Name (spoken in announcements)"><input class="tg" type="number" min="0" inputmode="numeric" placeholder="Target"><button class="del" aria-label="Delete">✕</button>`;
+    const [ar, nm, tg] = d.querySelectorAll('input');
+    ar.value = it.ar; nm.value = it.name; tg.value = it.target || '';
+    ar.oninput = () => { it.ar = ar.value; save(); };
+    nm.oninput = () => { it.name = nm.value; save(); };
+    tg.oninput = () => { it.target = Math.max(0, parseInt(tg.value) || 0); save(); };
+    d.querySelector('.del').onclick = () => { if(items.length > 1){ items.splice(i,1); if(cur >= items.length) cur = items.length-1; save(); renderItems(); } };
+    box.appendChild(d);
+  });
+}
+$('addItem').onclick = () => { items.push({ar:'', name:'New zikr', target:100, count:0}); save(); renderItems(); };
+$('resetAll').onclick = () => { items.forEach(x => x.count = 0); cur = 0; save(); render(); renderItems(); };
+
+function renderSettings(){
+  const bindRange = (id, lbl, fmt) => { const el = $(id); el.value = S[id]; const upd = () => { S[id] = +el.value; $(lbl).textContent = fmt(S[id]); save(); }; el.oninput = upd; upd(); };
+  bindRange('sens', 'sensV', v => v + ' dB');
+  bindRange('gap', 'gapV', v => v + ' ms');
+  bindRange('minLen', 'minV', v => v + ' ms');
+  ['ns','split','speakTarget','autoNext','vibrate'].forEach(id => { const el = $(id); el.checked = !!S[id]; el.onchange = () => { S[id] = el.checked; save(); }; });
+  ['beepEvery','speakEvery'].forEach(id => { const el = $(id); el.value = String(S[id]); el.onchange = () => { S[id] = +el.value; save(); }; });
+}
+
+// test hook (used for automated checks only)
+window.__zv = { get count(){ return items.reduce((a,x)=>a+x.count,0); }, items: () => items, S, det };
+
+render();
+})();
+</script>
+</body>
+</html>
