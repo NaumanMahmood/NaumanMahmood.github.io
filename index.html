@@ -7,88 +7,91 @@
 <meta name="mobile-web-app-capable" content="yes">
 <title>Zikr Voice Counter</title>
 <style>
-  :root{
-    --bg:#0b1412; --panel:#13201d; --panel2:#1a2b27; --line:#24403a;
-    --text:#e9f2ef; --muted:#8fa8a1; --accent:#34d399; --accent2:#fbbf24; --danger:#f87171;
-  }
+  :root{--bg:#0b1412;--panel:#13201d;--panel2:#1a2b27;--line:#24403a;--text:#e9f2ef;--muted:#8fa8a1;--accent:#34d399;--accent2:#fbbf24;--danger:#f87171}
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{margin:0;background:var(--bg);color:var(--text);font:16px/1.4 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
-  body{min-height:100vh;display:flex;flex-direction:column;max-width:560px;margin:0 auto;padding:12px 14px 24px}
+  body{min-height:100vh;max-width:560px;margin:0 auto;padding:12px 14px 24px}
   header{display:flex;align-items:center;justify-content:space-between;gap:8px}
-  h1{font-size:17px;margin:0;font-weight:600;letter-spacing:.2px}
+  h1{font-size:17px;margin:0;font-weight:600}
   .iconbtn{background:var(--panel);border:1px solid var(--line);color:var(--text);border-radius:12px;padding:8px 12px;font-size:15px}
-  .status{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:14px;margin:10px 2px 4px}
-  .dot{width:11px;height:11px;border-radius:50%;background:#4b5d58;flex:none;transition:background .08s}
-  .dot.on{background:var(--accent);box-shadow:0 0 10px var(--accent)}
-  .dot.paused{background:var(--accent2)}
-  .meter{position:relative;height:14px;background:var(--panel);border:1px solid var(--line);border-radius:8px;overflow:hidden;margin:4px 0 12px}
-  .meter .fill{position:absolute;inset:0 auto 0 0;width:0;background:linear-gradient(90deg,#1f7a5a,var(--accent));transition:width .05s linear}
-  .meter .mark{position:absolute;top:0;bottom:0;width:2px}
-  .meter .noise{background:#8fa8a1}
-  .meter .thr{background:var(--accent2)}
-  .card{background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:18px 16px;text-align:center;user-select:none;touch-action:manipulation}
-  .arabic{font-family:"Amiri","Scheherazade New","Noto Naskh Arabic","Geeza Pro",serif;direction:rtl;font-size:34px;line-height:1.5;min-height:52px}
-  .label{color:var(--muted);font-size:15px;margin-top:2px}
-  .count{font-size:min(34vw,170px);font-weight:700;line-height:1;margin:10px 0 2px;font-variant-numeric:tabular-nums;transition:color .15s}
+  .status{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:14px;margin:10px 2px 4px;min-height:20px}
+  .dot{width:11px;height:11px;border-radius:50%;background:#4b5d58;flex:none}
+  .dot.on{background:var(--accent);box-shadow:0 0 10px var(--accent)} .dot.paused{background:var(--accent2)}
+  .meter{position:relative;height:12px;background:var(--panel);border:1px solid var(--line);border-radius:8px;overflow:hidden;margin:4px 0 12px}
+  .meter .fill{position:absolute;inset:0 auto 0 0;width:0;background:linear-gradient(90deg,#1f7a5a,var(--accent))}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:16px;text-align:center;user-select:none;touch-action:manipulation}
+  .pname{color:var(--muted);font-size:14px;letter-spacing:.3px}
+  .arabic{font-family:"Amiri","Scheherazade New","Noto Naskh Arabic","Geeza Pro",serif;direction:rtl;font-size:24px;line-height:1.8;margin-top:4px}
+  .translit{color:var(--muted);font-size:13px;margin-top:2px}
+  .count{font-size:min(30vw,150px);font-weight:700;line-height:1;margin:10px 0 2px;font-variant-numeric:tabular-nums;transition:color .15s}
   .count.flash{color:var(--accent)}
   .target{color:var(--muted);font-size:17px}
   .bar{height:8px;background:var(--panel2);border-radius:6px;margin:12px 4px 4px;overflow:hidden}
   .bar>div{height:100%;width:0;background:var(--accent);transition:width .2s}
   .hint{color:var(--muted);font-size:12px;margin-top:8px}
-  .row{display:flex;gap:10px;margin-top:12px}
-  .row button{flex:1}
+  .row{display:flex;gap:10px;margin-top:12px} .row button{flex:1}
   button{font:inherit;cursor:pointer}
-  .btn{background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:14px;padding:14px 8px;font-size:17px}
+  .btn{background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:14px;padding:13px 8px;font-size:16px}
   .btn:active{transform:scale(.98)}
+  .btn.primary{background:var(--accent);color:#052e21;border:none;font-weight:700}
   .main{margin-top:14px;width:100%;border:none;border-radius:18px;padding:22px 10px;font-size:21px;font-weight:700;background:var(--accent);color:#052e21}
   .main.stop{background:var(--danger);color:#3b0909}
   .sub{color:var(--muted);font-size:13px;text-align:center;margin-top:8px;min-height:18px}
+  .warn{background:#3a2c0a;border:1px solid #7c5d12;color:#fde68a;border-radius:12px;padding:10px 12px;margin-top:12px;font-size:14px;display:none}
+  .warn button{margin-top:8px;width:100%}
   .rounds{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:12px}
   .chip{background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:5px 10px;font-size:13px;color:var(--muted)}
-  .chip.cur{border-color:var(--accent);color:var(--text)}
-  .chip.done{color:var(--accent)}
-  /* sheet */
+  .chip.cur{border-color:var(--accent);color:var(--text)} .chip.done{color:var(--accent)}
+  .err{background:#3b1414;border:1px solid #7f1d1d;color:#fecaca;border-radius:12px;padding:10px 12px;margin-top:10px;font-size:14px;display:none}
   .sheet{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:flex-end;justify-content:center;z-index:10}
   .sheet.open{display:flex}
   .sheet .inner{background:var(--bg);border:1px solid var(--line);border-bottom:none;border-radius:20px 20px 0 0;width:100%;max-width:560px;max-height:92vh;overflow:auto;padding:16px}
-  .sheet h2{font-size:17px;margin:4px 0 12px;display:flex;justify-content:space-between;align-items:center}
-  .sheet h3{font-size:14px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin:18px 0 8px}
-  .item{display:grid;grid-template-columns:1fr 74px 36px;gap:6px;margin-bottom:8px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:8px}
-  .item input{width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:8px;font:inherit}
-  .item .ar{grid-column:1/4;direction:rtl;font-family:"Amiri","Noto Naskh Arabic",serif;font-size:20px}
-  .item .del{background:none;border:none;color:var(--danger);font-size:20px}
-  .set{margin:12px 0}
-  .set label{display:flex;justify-content:space-between;font-size:15px}
-  .set label span{color:var(--accent2);font-variant-numeric:tabular-nums}
-  .set small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+  .sheet h2{font-size:17px;margin:4px 0 12px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .sheet h3{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin:18px 0 8px}
+  .item{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px;margin-bottom:10px}
+  .item input,.item textarea{width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:8px;font:inherit;margin-bottom:6px}
+  .item textarea{direction:rtl;font-family:"Amiri","Noto Naskh Arabic",serif;font-size:19px;resize:vertical;min-height:58px}
+  .item .g{display:grid;grid-template-columns:1fr 90px;gap:6px}
+  .item .acts{display:flex;gap:8px} .item .acts button{flex:1;padding:10px 6px;font-size:15px}
+  .item .del{flex:0 0 48px !important;color:var(--danger)}
+  .set{margin:12px 0} .set label{display:flex;justify-content:space-between;font-size:15px} .set label span{color:var(--accent2)}
+  .set small,.check small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
   input[type=range]{width:100%;accent-color:var(--accent)}
   select{background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:6px;font:inherit}
   .check{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:12px 0;font-size:15px}
   .check input{width:22px;height:22px;accent-color:var(--accent);flex:none}
-  .check small{display:block;color:var(--muted);font-size:12px}
-  .err{background:#3b1414;border:1px solid #7f1d1d;color:#fecaca;border-radius:12px;padding:10px 12px;margin-top:10px;font-size:14px;display:none}
+  .rec{width:100%;padding:26px 10px;border-radius:18px;border:none;font-size:20px;font-weight:700;background:var(--accent);color:#052e21;margin-top:6px}
+  .rec.live{background:var(--danger);color:#3b0909}
+  .samples{margin-top:12px} .sample{display:flex;justify-content:space-between;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 12px;margin-bottom:6px;font-size:15px}
+  .sample button{background:none;border:none;color:var(--danger);font-size:18px}
+  .tip{color:var(--muted);font-size:13px;line-height:1.5}
+  .qual{font-size:14px;margin-top:8px}
 </style>
 </head>
 <body>
 <header>
   <h1>Zikr Voice Counter</h1>
   <div style="display:flex;gap:8px">
-    <button class="iconbtn" id="listBtn" aria-label="Edit zikr list">☰ List</button>
+    <button class="iconbtn" id="listBtn">☰ Prayers</button>
     <button class="iconbtn" id="setBtn" aria-label="Settings">⚙︎</button>
   </div>
 </header>
 
 <div class="status"><span class="dot" id="dot"></span><span id="statusText">Not listening</span></div>
-<div class="meter" title="Mic level"><div class="fill" id="fill"></div><div class="mark noise" id="noiseMark"></div><div class="mark thr" id="thrMark"></div></div>
+<div class="meter"><div class="fill" id="fill"></div></div>
 
 <div class="card" id="card">
+  <div class="pname" id="pname"></div>
   <div class="arabic" id="arabic"></div>
-  <div class="label" id="label"></div>
+  <div class="translit" id="translit"></div>
   <div class="count" id="count">0</div>
   <div class="target" id="target"></div>
   <div class="bar"><div id="bar"></div></div>
   <div class="hint">Tap here to add 1 manually</div>
 </div>
+
+<div class="warn" id="untrained">This prayer hasn’t been voice-trained yet, so it can’t be counted by voice. It takes about a minute: record yourself reciting it 3 times.
+  <button class="btn primary" id="trainNow">🎙 Train this prayer</button></div>
 
 <div class="row">
   <button class="btn" id="minus">−1</button>
@@ -98,327 +101,578 @@
 </div>
 
 <button class="main" id="main">🎙 Start listening</button>
-<div class="sub" id="sub">Leave a short breath between repetitions.</div>
+<div class="sub" id="sub"></div>
 <div class="err" id="err"></div>
 <div class="rounds" id="rounds"></div>
 
-<!-- List sheet -->
+<!-- Prayers sheet -->
 <div class="sheet" id="listSheet"><div class="inner">
-  <h2>Zikr list <button class="iconbtn" data-close>Done</button></h2>
+  <h2>Prayers <button class="iconbtn" data-close>Done</button></h2>
   <div id="items"></div>
-  <div class="row"><button class="btn" id="addItem">+ Add zikr</button><button class="btn" id="resetAll">Reset all counts</button></div>
+  <div class="row"><button class="btn" id="addItem">+ Add prayer</button><button class="btn" id="resetAll">Reset all counts</button></div>
+</div></div>
+
+<!-- Training sheet -->
+<div class="sheet" id="trainSheet"><div class="inner">
+  <h2><span id="trName">Train</span> <button class="iconbtn" id="trDone">Done</button></h2>
+  <div class="arabic" id="trArabic" style="text-align:center"></div>
+  <div class="translit" id="trTranslit" style="text-align:center;margin-bottom:10px"></div>
+  <p class="tip">Tap <b>Record</b>, wait for the beep, then recite the prayer <b>once</b> the way you normally do. It stops by itself when you pause for 2 seconds. Record it <b>3 times</b>. Recording once more in the car (parked, engine on) makes it more reliable while driving.</p>
+  <div class="meter"><div class="fill" id="trFill"></div></div>
+  <button class="rec" id="recBtn">🎙 Record</button>
+  <div class="sub" id="trMsg"></div>
+  <div class="samples" id="samples"></div>
+  <div class="qual" id="qual"></div>
 </div></div>
 
 <!-- Settings sheet -->
 <div class="sheet" id="setSheet"><div class="inner">
   <h2>Settings <button class="iconbtn" data-close>Done</button></h2>
-  <h3>Detection</h3>
-  <div class="set"><label>Sensitivity <span id="sensV"></span></label>
-    <input type="range" id="sens" min="4" max="24" step="1">
-    <small>How much louder than the background your voice must be (dB). Lower = more sensitive. Raise it if road noise gets counted.</small></div>
-  <div class="set"><label>Pause between repetitions <span id="gapV"></span></label>
-    <input type="range" id="gap" min="150" max="1500" step="50">
-    <small>Silence needed to finish one repetition. If one phrase is counted twice, increase this. If two phrases are counted as one, decrease it.</small></div>
-  <div class="set"><label>Minimum phrase length <span id="minV"></span></label>
-    <input type="range" id="minLen" min="100" max="1500" step="50">
-    <small>Sounds shorter than this (coughs, clicks, indicator ticks) are ignored.</small></div>
-  <label class="check"><div>Phone noise suppression<small>Uses Android's built-in voice filter — usually helps in a car. Restart listening to apply.</small></div><input type="checkbox" id="ns"></label>
-  <label class="check"><div>Count run-together phrases<small>If you don't pause between repetitions, estimates how many were said using your usual phrase length. Can overcount; leave off if you pause.</small></div><input type="checkbox" id="split"></label>
+  <h3>Recognition</h3>
+  <div class="set"><label>Match strictness <span id="adjV"></span></label>
+    <input type="range" id="adjust" min="-0.15" max="0.15" step="0.01">
+    <small>Left = stricter (fewer false counts), right = looser (fewer missed prayers). After a recitation the screen shows its match score and the limit, to help you tune this.</small></div>
+  <div class="set"><label>Voice detection level <span id="sensV"></span></label>
+    <input type="range" id="sens" min="5" max="20" step="1">
+    <small>How far above the background noise counts as your voice. Raise it if the dot stays green with nobody speaking.</small></div>
+  <label class="check"><div>Phone noise suppression<small>Android’s built-in voice filter. Usually helps in a car. Restart listening to apply.</small></div><input type="checkbox" id="ns"></label>
   <h3>Feedback</h3>
   <label class="check"><div>Short beep every<small>A quick chime so you can keep track without looking.</small></div>
-    <select id="beepEvery"><option value="0">Off</option><option>1</option><option>5</option><option>10</option><option>25</option><option>33</option><option>50</option></select></label>
-  <label class="check"><div>Speak the count every<small>Listening pauses while it speaks, so repetitions said over it are missed.</small></div>
-    <select id="speakEvery"><option value="0">Off</option><option>10</option><option>25</option><option>33</option><option>50</option></select></label>
+    <select id="beepEvery"><option value="0">Off</option><option>1</option><option>5</option><option>10</option><option>25</option><option>50</option></select></label>
+  <label class="check"><div>Speak the count every<small>Listening pauses while it speaks.</small></div>
+    <select id="speakEvery"><option value="0">Off</option><option>10</option><option>25</option><option>50</option></select></label>
   <label class="check"><div>Announce when target is reached</div><input type="checkbox" id="speakTarget"></label>
-  <label class="check"><div>Move to next zikr at target<small>Off = keep counting past the target.</small></div><input type="checkbox" id="autoNext"></label>
+  <label class="check"><div>Move to next prayer at target<small>Off = keep counting past the target.</small></div><input type="checkbox" id="autoNext"></label>
   <label class="check"><div>Vibrate on each count</div><input type="checkbox" id="vibrate"></label>
 </div></div>
 
 <script>
+/* ZikrEngine — offline phrase spotting for one speaker.
+   Audio -> high-pass -> 32 ms frames every 20 ms -> MFCC (c1..c12) + voice-activity flag.
+   Each prayer is learned from a few recordings of the user; live audio is compared to them
+   with streaming subsequence DTW, and a repetition is counted only when a whole prayer matches. */
+(function (G) {
+'use strict';
+const NCEP = 12, HOP_S = 0.020, WIN_S = 0.032, NMEL = 24, FMIN = 100, FMAX = 4000;
+
+function fftReal(re, im) { // in-place radix-2
+  const n = re.length;
+  for (let i = 1, j = 0; i < n; i++) {
+    let bit = n >> 1; for (; j & bit; bit >>= 1) j ^= bit; j ^= bit;
+    if (i < j) { let t = re[i]; re[i] = re[j]; re[j] = t; t = im[i]; im[i] = im[j]; im[j] = t; }
+  }
+  for (let len = 2; len <= n; len <<= 1) {
+    const ang = -2 * Math.PI / len, wr = Math.cos(ang), wi = Math.sin(ang), h = len >> 1;
+    for (let i = 0; i < n; i += len) {
+      let cr = 1, ci = 0;
+      for (let k = 0; k < h; k++) {
+        const a = i + k, b = a + h;
+        const tr = re[b] * cr - im[b] * ci, ti = re[b] * ci + im[b] * cr;
+        re[b] = re[a] - tr; im[b] = im[a] - ti; re[a] += tr; im[a] += ti;
+        const ncr = cr * wr - ci * wi; ci = cr * wi + ci * wr; cr = ncr;
+      }
+    }
+  }
+}
+
+/* ---------------- Feature stream ---------------- */
+class FeatureStream {
+  constructor(sr, opts = {}) {
+    this.sr = sr; this.sens = opts.sens || 10;
+    this.hop = Math.round(sr * HOP_S); this.win = Math.round(sr * WIN_S);
+    let n = 1; while (n < this.win) n <<= 1; this.nfft = n;
+    this.buf = new Float32Array(this.win); this.ring = new Float32Array(this.win); this.pos = 0; this.fill = 0; this.sinceHop = 0;
+    this.hamming = new Float32Array(this.win).map((_, i) => 0.54 - 0.46 * Math.cos(2 * Math.PI * i / (this.win - 1)));
+    this.re = new Float64Array(n); this.im = new Float64Array(n);
+    // mel filterbank
+    const mel = f => 2595 * Math.log10(1 + f / 700), imel = m => 700 * (Math.pow(10, m / 2595) - 1);
+    const fmax = Math.min(FMAX, sr / 2 - 1), m0 = mel(FMIN), m1 = mel(fmax);
+    const pts = []; for (let i = 0; i < NMEL + 2; i++) pts.push(imel(m0 + (m1 - m0) * i / (NMEL + 1)) * n / sr);
+    this.fb = [];
+    for (let m = 0; m < NMEL; m++) {
+      const lo = pts[m], c = pts[m + 1], hi = pts[m + 2], w = [];
+      for (let k = Math.floor(lo); k <= Math.ceil(hi) && k <= n / 2; k++) {
+        const v = k < c ? (k - lo) / (c - lo) : (hi - k) / (hi - c);
+        if (v > 0) w.push([k, v]);
+      }
+      this.fb.push(w);
+    }
+    this.dct = []; for (let k = 1; k <= NCEP; k++) { const r = new Float64Array(NMEL); for (let m = 0; m < NMEL; m++) r[m] = Math.cos(Math.PI * k * (m + 0.5) / NMEL); this.dct.push(r); }
+    // 2nd-order high-pass at 120 Hz (road/engine rumble)
+    const w0 = 2 * Math.PI * 120 / sr, al = Math.sin(w0) / (2 * Math.SQRT1_2), cs = Math.cos(w0), a0 = 1 + al;
+    this.hb = [(1 + cs) / 2 / a0, -(1 + cs) / a0, (1 + cs) / 2 / a0, -2 * cs / a0, (1 - al) / a0];
+    this.hz = [0, 0, 0, 0];
+    this.t = 0; this.noise = null; this.learn = []; this.speech = false; this.below = 0; this.speechRun = 0;
+    this.onFrame = null; this.melNoise = null; this.melSpeech = null; this.floorRel = opts.floorRel || 0.3;
+  }
+  push(x) {
+    const [b0, b1, b2, a1, a2] = this.hb, z = this.hz, buf = this.buf, win = this.win;
+    for (let i = 0; i < x.length; i++) {
+      const xi = x[i], y = b0 * xi + b1 * z[0] + b2 * z[1] - a1 * z[2] - a2 * z[3];
+      z[1] = z[0]; z[0] = xi; z[3] = z[2]; z[2] = y;
+      this.ring[this.pos] = y; this.pos = (this.pos + 1) % win; if (this.fill < win) this.fill++;
+      if (++this.sinceHop >= this.hop && this.fill >= win) {
+        this.sinceHop = 0; const p = this.pos; buf.set(this.ring.subarray(p), 0); buf.set(this.ring.subarray(0, p), win - p); this._frame();
+      }
+    }
+  }
+  _frame() {
+    const { buf, win, re, im, nfft } = this;
+    let e = 0;
+    for (let i = 0; i < win; i++) e += buf[i] * buf[i];
+    const db = Math.max(-100, 10 * Math.log10(e / win + 1e-12));
+    re.fill(0); im.fill(0);
+    for (let i = 0; i < win; i++) re[i] = (buf[i] - 0.97 * (i ? buf[i - 1] : 0)) * this.hamming[i];
+    fftReal(re, im);
+    const E = new Float64Array(NMEL);
+    for (let m = 0; m < NMEL; m++) { let s = 0; for (const [k, v] of this.fb[m]) s += v * (re[k] * re[k] + im[k] * im[k]); E[m] = s + 1e-12; }
+    // noise-robust energies: subtract the learned background spectrum, then floor relative to the
+    // speaker's typical level so quiet rooms and noisy cars give similar features
+    const nz = this.melNoise, spk = this.melSpeech, lm = new Float64Array(NMEL);
+    for (let m = 0; m < NMEL; m++) {
+      const floor = Math.max(2 * (nz ? nz[m] : 0), spk ? spk[m] * this.floorRel : 0, 1e-10);
+      lm[m] = Math.log(Math.max(E[m] - 1.5 * (nz ? nz[m] : 0), 0) + floor);
+    }
+    const c = new Float32Array(NCEP);
+    for (let k = 0; k < NCEP; k++) { let s = 0; const r = this.dct[k]; for (let m = 0; m < NMEL; m++) s += r[m] * lm[m]; c[k] = s; }
+    this.t++;
+    const speech = this._vad(db);
+    // track background and speech spectra per mel band
+    if (!speech) {
+      if (!this.melNoise) this.melNoise = Float64Array.from(E);
+      else for (let m = 0; m < NMEL; m++) { const r = E[m] < this.melNoise[m] ? 0.15 : 0.02; this.melNoise[m] += (E[m] - this.melNoise[m]) * r; }
+    } else {
+      if (!this.melSpeech) this.melSpeech = Float64Array.from(E);
+      else for (let m = 0; m < NMEL; m++) this.melSpeech[m] += (E[m] - this.melSpeech[m]) * 0.01;
+    }
+    if (this.onFrame) this.onFrame({ c, db, speech, t: this.t, ready: this.noise !== null });
+  }
+  _vad(db) {
+    if (this.noise === null) {           // learn the background for the first 0.6 s
+      this.learn.push(db);
+      if (this.learn.length >= 30) { const s = this.learn.sort((a, b) => a - b); this.noise = s[Math.floor(s.length * 0.25)]; this.learn = null; }
+      return false;
+    }
+    const on = this.noise + this.sens, off = this.noise + Math.max(3, this.sens - 4);
+    if (!this.speech) {
+      if (db < this.noise) this.noise += (db - this.noise) * 0.1;
+      else if (db < on) this.noise += (db - this.noise) * 0.006;
+      if (db > on) { this.speech = true; this.below = 0; this.speechRun = 0; }
+    } else {
+      this.speechRun++;
+      if (db < off) { if (++this.below >= 4) this.speech = false; } else this.below = 0;
+      if (this.speechRun > 50 * 20) { this.noise = db - 2; this.speech = false; } // 20 s non-stop: background changed
+    }
+    return this.speech;
+  }
+}
+
+/* ---------------- Normalisation ---------------- */
+function centreSample(frames) { // frames: [{c, speech}] from one recording -> trimmed, mean-removed template
+  let a = 0, b = frames.length - 1;
+  while (a < frames.length && !frames[a].speech) a++;
+  while (b > a && !frames[b].speech) b--;
+  const f = frames.slice(a, b + 1), sp = f.filter(x => x.speech);
+  if (sp.length < 25) return null;
+  const mean = new Float64Array(NCEP);
+  for (const x of sp) for (let k = 0; k < NCEP; k++) mean[k] += x.c[k] / sp.length;
+  const ctr = arr => arr.map(x => Array.from(x.c, (v, k) => +(v - mean[k]).toFixed(3)));
+  return { frames: ctr(f), pre: ctr(frames.slice(Math.max(0, a - 10), a)), post: ctr(frames.slice(b + 1, b + 16)), secs: +(f.length * HOP_S).toFixed(2) };
+}
+function globalStd(allSamples) {
+  const s = new Float64Array(NCEP), s2 = new Float64Array(NCEP); let n = 0;
+  for (const smp of allSamples) for (const f of smp.frames) { n++; for (let k = 0; k < NCEP; k++) { s[k] += f[k]; s2[k] += f[k] * f[k]; } }
+  if (!n) return null;
+  return Array.from(s, (v, k) => Math.max(1e-3, Math.sqrt(s2[k] / n - (v / n) ** 2)));
+}
+const scaleFrames = (frames, std) => frames.map(f => Float32Array.from(f, (v, k) => v / std[k]));
+
+class LiveNormaliser { // running cepstral mean over the last ~3 s of speech
+  constructor(std) { this.std = std; this.mean = new Float64Array(NCEP); this.n = 0; }
+  apply(fr) {
+    if (fr.speech) { this.n++; const a = Math.max(1 / this.n, 1 / 150); for (let k = 0; k < NCEP; k++) this.mean[k] += (fr.c[k] - this.mean[k]) * a; }
+    if (!this.n) return null;
+    return Float32Array.from(fr.c, (v, k) => (v - this.mean[k]) / this.std[k]);
+  }
+}
+
+/* ---------------- Streaming subsequence DTW ---------------- */
+function dist(x, y) { // cosine distance scaled to ~0..4 (insensitive to how compressed the spectrum is by noise)
+  if (!x || !y) return 4;
+  let xy = 0, xx = 0, yy = 0; for (let k = 0; k < x.length; k++) { xy += x[k] * y[k]; xx += x[k] * x[k]; yy += y[k] * y[k]; }
+  return 2 * (1 - xy / Math.sqrt(xx * yy + 1e-9));
+}
+class Spotter {
+  constructor(templates, thr) {
+    this.thr = thr; this.t = 0; this.armed = false; this.recent = Infinity;
+    this.F = new Float64Array(8192); // cumulative best-frame cost (order-free 'filler' score), ring buffer
+    this.T = templates.map(T => {
+      const M = T.length;
+      return { T, M, D: new Float64Array(M).fill(Infinity), N: new Int32Array(M), S: new Int32Array(M), H: new Int32Array(M),
+               pD: new Float64Array(M), pN: new Int32Array(M), pS: new Int32Array(M), pH: new Int32Array(M) };
+    });
+  }
+  reset() { for (const s of this.T) s.D.fill(Infinity); this.armed = false; }
+  step(x) {
+    if (!x) return null;              // nothing to compare yet (before the first speech)
+    const t = ++this.t; let best = Infinity, fmin = Infinity; const ends = [];
+    for (const s of this.T) {
+      const { T, M } = s;
+      [s.pD, s.D] = [s.D, s.pD]; [s.pN, s.N] = [s.N, s.pN]; [s.pS, s.S] = [s.S, s.pS]; [s.pH, s.H] = [s.H, s.pH];
+      const { D, N, S, H, pD, pN, pS, pH } = s;
+      for (let i = 0; i < M; i++) {
+        const c = dist(x, T[i]); if (c < fmin) fmin = c;
+        let bd = Infinity, bn = 0, bs = 0, bh = 0, ba = Infinity, a;
+        if (i === 0) { bd = c; bn = 1; bs = t; bh = 0; ba = c; }
+        if (pD[i] < Infinity && pH[i] < 4) { a = (pD[i] + c + 0.1) / (pN[i] + 1); if (a < ba) { ba = a; bd = pD[i] + c + 0.1; bn = pN[i] + 1; bs = pS[i]; bh = pH[i] + 1; } }
+        if (i >= 1 && pD[i - 1] < Infinity) { a = (pD[i - 1] + c) / (pN[i - 1] + 1); if (a < ba) { ba = a; bd = pD[i - 1] + c; bn = pN[i - 1] + 1; bs = pS[i - 1]; bh = 0; } }
+        if (i >= 2 && pD[i - 2] < Infinity) { a = (pD[i - 2] + c) / (pN[i - 2] + 1); if (a < ba) { ba = a; bd = pD[i - 2] + c; bn = pN[i - 2] + 1; bs = pS[i - 2]; bh = 0; } }
+        D[i] = bd; N[i] = bn; S[i] = bs; H[i] = bh;
+      }
+      const dur = t - S[M - 1] + 1;
+      if (D[M - 1] < Infinity && dur >= 0.55 * M && dur <= 1.9 * M) ends.push([D[M - 1] / N[M - 1], S[M - 1], dur]);
+    }
+    // Score = in-order match cost minus order-free match cost over the same stretch of audio.
+    // Background noise raises both equally, so the difference stays stable from a quiet room to a car.
+    const F = this.F; F[t & 8191] = F[(t - 1) & 8191] + fmin;
+    for (const [avg, st, dur] of ends) best = Math.min(best, avg - (F[t & 8191] - F[(st - 1) & 8191]) / dur);
+    this.recent = Math.min(this.recent, best); // closest match since the caller last cleared it
+    // decide
+    if (best < this.thr) {
+      if (!this.armed || best < this.armBest) { this.armed = true; this.armBest = best; this.armT = t; }
+    }
+    if (this.armed && (best >= this.thr || t - this.armT >= 8)) {
+      const sc = this.armBest; this.reset(); return sc;   // one repetition recognised
+    }
+    return null;
+  }
+}
+
+/* ---------------- Model building / calibration ---------------- */
+function minScore(templates, smp) { // closest whole-prayer match of templates against one recording
+  const sp = new Spotter(templates, -1);   // threshold -1: never fires, just measures
+  for (const x of [...smp.pre, ...smp.frames, ...smp.post]) sp.step(x);
+  return sp.recent;
+}
+/* prayers: [{id, samples:[{frames,secs}]}] -> {std, models:{id:{templates, thr, intra, inter}}} */
+function buildModels(prayers, adjust = 0) {
+  const all = prayers.flatMap(p => p.samples);
+  const std = globalStd(all); if (!std) return { std: null, models: {} };
+  const scaled = new Map(prayers.map(p => [p.id, p.samples.map(s => ({ frames: scaleFrames(s.frames, std), pre: scaleFrames(s.pre, std), post: scaleFrames(s.post, std) }))]));
+  const models = {};
+  for (const p of prayers) {
+    const sm = scaled.get(p.id); if (!sm.length) continue; const tp = sm.map(x => x.frames);
+    let intra = null;
+    if (tp.length >= 2) intra = Math.max(...sm.map((x, j) => minScore(tp.filter((_, i) => i !== j), x)));
+    let inter = Infinity;
+    for (const q of prayers) if (q.id !== p.id) for (const x of scaled.get(q.id)) inter = Math.min(inter, minScore(tp, x));
+    // Default limit 0.42 (tested in quiet and road noise); loosened if this speaker's own repetitions
+    // vary a lot, tightened if another trained prayer comes close.
+    let thr = 0.42;
+    if (intra !== null) thr = Math.max(thr, intra + 0.12);
+    if (inter < Infinity) thr = Math.min(thr, (intra || 0) + 0.6 * (inter - (intra || 0)));
+    thr = Math.min(0.55, Math.max(0.25, thr));
+    models[p.id] = { templates: tp, base: thr, thr: thr + adjust, intra, inter: inter < Infinity ? inter : null };
+  }
+  return { std, models };
+}
+
+G.ZikrEngine = { FeatureStream, LiveNormaliser, Spotter, centreSample, buildModels, HOP_S };
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+<script>
 (() => {
 'use strict';
-const $ = id => document.getElementById(id);
+const E = window.ZikrEngine, $ = id => document.getElementById(id);
 const store = {
   get(k, d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
-  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); return true; }catch(e){ return false; } }
 };
-
+const uid = () => Math.random().toString(36).slice(2, 9);
 const DEFAULT_ITEMS = [
-  {ar:'سُبْحَانَ ٱللَّٰهِ', name:'SubhanAllah', target:100, count:0},
-  {ar:'ٱلْحَمْدُ لِلَّٰهِ', name:'Alhamdulillah', target:100, count:0},
-  {ar:'ٱللَّٰهُ أَكْبَرُ', name:'Allahu Akbar', target:100, count:0},
-  {ar:'أَسْتَغْفِرُ ٱللَّٰهَ', name:'Astaghfirullah', target:100, count:0},
-  {ar:'لَا إِلَٰهَ إِلَّا ٱللَّٰهُ', name:'La ilaha illallah', target:100, count:0},
-];
-const DEFAULT_SET = {sens:10, gap:400, minLen:250, ns:true, split:false, beepEvery:10, speakEvery:0, speakTarget:true, autoNext:true, vibrate:false};
+  {name:'Prayer 1', target:200, translit:'SubhanAllahi wa bi Hamdihi SubhanAllahil Azeem, Allahumma Salle ala Muhammadin wa aali Muhammad',
+   ar:'سُبْحَانَ اللّٰهِ وَبِحَمْدِهِ سُبْحَانَ اللّٰهِ الْعَظِيْمِ، اَللّٰهُمَّ صَلِّ عَلٰى مُحَمَّدٍ وَّاٰلِ مُحَمَّدٍ'},
+  {name:'Prayer 2', target:100, translit:'Astaghfirullaha rabbi min kulli dhanbin wa atubu ilaih',
+   ar:'أَسْتَغْفِرُ اللّٰهَ رَبِّيْ مِنْ كُلِّ ذَنْبٍ وَّأَتُوْبُ إِلَيْهِ'},
+  {name:'Prayer 3', target:100, translit:'Rabbi kullu shay’in khadimuka, Rabbi fahfazni wansurni warhamni',
+   ar:'رَبِّ كُلُّ شَيْءٍ خَادِمُكَ رَبِّ فَاحْفَظْنِيْ وَانْصُرْنِيْ وَارْحَمْنِيْ'},
+].map(x => ({...x, id: uid(), count: 0}));
+const DEFAULT_SET = {adjust:0, sens:10, ns:true, beepEvery:10, speakEvery:0, speakTarget:true, autoNext:true, vibrate:false};
 
-let items = store.get('zv_items', DEFAULT_ITEMS);
-let cur = store.get('zv_cur', 0);
-let S = Object.assign({}, DEFAULT_SET, store.get('zv_set', {}));
-if(!Array.isArray(items) || !items.length) items = DEFAULT_ITEMS.map(x=>({...x}));
-if(cur >= items.length) cur = 0;
+let items = store.get('zv2_items', null);
+if (!Array.isArray(items) || !items.length){ items = DEFAULT_ITEMS; store.set('zv2_items', items); }
+let cur = Math.min(store.get('zv2_cur', 0), items.length - 1);
+let S = Object.assign({}, DEFAULT_SET, store.get('zv2_set', {}));
+let samples = store.get('zv2_samples', {});            // prayer id -> [centred recordings]
+const save = () => { store.set('zv2_items', items); store.set('zv2_cur', cur); store.set('zv2_set', S); };
+let samplesVer = 0;
+const saveSamples = () => { samplesVer++; if (!store.set('zv2_samples', samples)) showErr('Phone storage is full, so this training could not be saved.'); };
 
-const save = () => { store.set('zv_items', items); store.set('zv_cur', cur); store.set('zv_set', S); };
+// ---------- voice models ----------
+let built = null, builtKey = '';
+function models(){
+  const key = samplesVer + '|' + S.adjust + '|' + items.map(i => i.id).join();
+  if (key !== builtKey){
+    const prayers = items.map(it => ({id: it.id, samples: samples[it.id] || []})).filter(p => p.samples.length);
+    built = E.buildModels(prayers, S.adjust); builtKey = key;
+  }
+  return built;
+}
+const trained = it => (samples[it.id] || []).length >= 2;
 
 // ---------- UI ----------
 function render(){
   const it = items[cur];
-  $('arabic').textContent = it.ar || '';
-  $('label').textContent = it.name || '';
+  $('pname').textContent = `${it.name}${it.target ? ' · ' + it.target + '×' : ''}`;
+  $('arabic').textContent = it.ar || ''; $('translit').textContent = it.translit || '';
   $('count').textContent = it.count;
   $('target').textContent = it.target ? `of ${it.target}` : 'no target';
   $('bar').style.width = it.target ? Math.min(100, it.count / it.target * 100) + '%' : '0';
+  $('untrained').style.display = trained(it) ? 'none' : 'block';
   const r = $('rounds'); r.innerHTML = '';
   items.forEach((x, i) => {
     const c = document.createElement('span');
     c.className = 'chip' + (i === cur ? ' cur' : '') + (x.target && x.count >= x.target ? ' done' : '');
-    c.textContent = `${x.name || x.ar}: ${x.count}${x.target ? '/' + x.target : ''}`;
-    c.onclick = () => { cur = i; save(); render(); };
+    c.textContent = `${x.name}: ${x.count}${x.target ? '/' + x.target : ''}${trained(x) ? '' : ' · untrained'}`;
+    c.onclick = () => select(i);
     r.appendChild(c);
   });
 }
-function flash(){ const c = $('count'); c.classList.add('flash'); clearTimeout(flash.t); flash.t = setTimeout(()=>c.classList.remove('flash'), 180); }
+function select(i){ cur = i; save(); render(); if (listening) armSpotter(); }
+function flash(){ const c = $('count'); c.classList.add('flash'); clearTimeout(flash.t); flash.t = setTimeout(() => c.classList.remove('flash'), 200); }
 
-// ---------- Audio feedback ----------
+// ---------- sound ----------
 let actx = null;
-function beep(freq=880, dur=0.07, when=0, vol=0.25){
-  if(!actx) return;
-  const t = actx.currentTime + when, o = actx.createOscillator(), g = actx.createGain();
-  o.type = 'sine'; o.frequency.value = freq;
-  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t+0.01); g.gain.exponentialRampToValueAtTime(0.0001, t+dur);
-  o.connect(g).connect(actx.destination); o.start(t); o.stop(t+dur+0.02);
-}
-let pausedUntil = 0, speaking = false;
-function say(text, after){
-  if(!('speechSynthesis' in window)){ after && after(); return; }
-  try{
-    speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text);
-    u.lang = 'en-GB'; u.rate = 1.05;
-    speaking = true; setStatus();
-    const done = () => { speaking = false; pausedUntil = performance.now() + 500; setStatus(); after && after(); };
-    u.onend = done; u.onerror = done;
-    speechSynthesis.speak(u);
-    setTimeout(()=>{ if(speaking) done(); }, 8000); // safety
-  }catch(e){ speaking = false; after && after(); }
-}
-
-// ---------- Counting ----------
-function add(n, source){
-  const it = items[cur];
-  for(let k = 0; k < n; k++){
-    it.count++;
-    const c = it.count;
-    if(it.target && c === it.target){
-      save(); render(); flash();
-      beep(660,0.12,0); beep(880,0.12,0.13); beep(1100,0.2,0.26);
-      const nextIdx = (cur + 1 < items.length) ? cur + 1 : -1;
-      if(S.autoNext && nextIdx >= 0){
-        const nx = items[nextIdx];
-        if(S.speakTarget) say(`${c} done. Next, ${nx.name || 'next zikr'}.`);
-        cur = nextIdx; save(); render();
-        // remaining increments (run-together) roll into the next zikr
-        if(n - k - 1 > 0) return add(n - k - 1, source);
-        return;
-      } else if(S.speakTarget){ say(nextIdx < 0 && S.autoNext ? `${c} done. All complete.` : `${c} done.`); }
-      continue;
-    }
-    if(S.speakEvery && c % S.speakEvery === 0 && source === 'voice'){ say(String(c)); }
-    else if(S.beepEvery && c % S.beepEvery === 0){ beep(S.beepEvery === 1 ? 1000 : 880, 0.06); }
-  }
-  if(S.vibrate && navigator.vibrate){ try{ navigator.vibrate(40); }catch(e){} }
-  save(); render(); flash();
-}
-$('card').addEventListener('click', () => { ensureCtx(); add(1, 'tap'); });
-$('minus').onclick = () => { const it = items[cur]; if(it.count > 0){ it.count--; save(); render(); } };
-$('reset').onclick = () => { items[cur].count = 0; save(); render(); };
-$('next').onclick = () => { cur = (cur + 1) % items.length; save(); render(); };
-$('prev').onclick = () => { cur = (cur - 1 + items.length) % items.length; save(); render(); };
-
-// ---------- Voice activity detection ----------
-const FRAME_MS = 10;
-const det = { noise: null, state: 'idle', above: 0, below: 0, segStart: 0, t: 0, durs: [] };
-function resetDet(){ det.noise = null; det.state = 'idle'; det.above = 0; det.below = 0; det.t = 0; det.learn = null; }
-function median(a){ const s = [...a].sort((x,y)=>x-y); return s[Math.floor(s.length/2)]; }
-let lastDb = -100;
-
-function onFrame(db){
-  lastDb = db;
-  det.t += FRAME_MS;
-  db = Math.max(db, -95);
-  if(det.noise === null){ det.noise = db; return; }
-  if(det.t <= 800){ // quick initial learning of the background (robust to speech starting straight away)
-    (det.learn = det.learn || []).push(db);
-    if(det.t > 790){ const s = det.learn.sort((a,b)=>a-b); det.noise = s[Math.floor(s.length * 0.25)]; det.learn = null; }
-    return;
-  }
-  const muted = speaking || performance.now() < pausedUntil || !listening;
-  const on = det.noise + S.sens, off = det.noise + Math.max(3, S.sens - 4);
-
-  if(muted){
-    if(det.state === 'speech'){ det.state = 'idle'; } det.above = 0; det.below = 0;
-    return;
-  }
-  if(det.state === 'idle'){
-    // track background: falls fast, rises slowly (~4 s)
-    if(db < det.noise) det.noise += (db - det.noise) * 0.06;
-    else if(db < on) det.noise += (db - det.noise) * 0.003;
-    else det.noise += (db - det.noise) * 0.0004;
-    det.noise = Math.max(det.noise, -95);
-    if(db > on){ det.above += FRAME_MS; if(det.above >= 40){ det.state = 'speech'; det.segStart = det.t - det.above; det.below = 0; } }
-    else det.above = 0;
-  } else { // speech
-    if(db < off){
-      det.below += FRAME_MS;
-      if(det.below >= S.gap){
-        const dur = (det.t - det.below) - det.segStart;
-        det.state = 'idle'; det.above = 0;
-        endSegment(dur);
-      }
-    } else det.below = 0;
-    // If "speech" never ends, the background got louder (window down, rain) — re-learn it.
-    if(det.t - det.segStart > 12000){ det.noise = db - 2; det.state = 'idle'; det.above = 0; note('Background got louder — re-calibrated'); }
-  }
-}
-function endSegment(dur){
-  if(dur < S.minLen) return;
-  let n = 1;
-  if(det.durs.length >= 5){
-    const m = median(det.durs);
-    if(S.split && dur > 1.6 * m) n = Math.min(6, Math.max(1, Math.round(dur / m)));
-  }
-  if(n === 1){ det.durs.push(dur); if(det.durs.length > 25) det.durs.shift(); }
-  add(n, 'voice');
-}
-
-// ---------- Mic plumbing ----------
-let stream = null, node = null, src = null, listening = false, wakeLock = null;
 function ensureCtx(){
-  if(!actx){ const AC = window.AudioContext || window.webkitAudioContext; actx = new AC(); }
-  if(actx.state === 'suspended') actx.resume();
+  if (!actx){ const AC = window.AudioContext || window.webkitAudioContext; actx = new AC(); }
+  if (actx.state === 'suspended') actx.resume();
   return actx;
 }
-const WORKLET = `
-class Lvl extends AudioWorkletProcessor{
-  constructor(){ super(); this.n = Math.round(sampleRate/100); this.acc = 0; this.k = 0; }
-  process(inp){
-    const ch = inp[0] && inp[0][0];
-    if(ch){ for(let i=0;i<ch.length;i++){ this.acc += ch[i]*ch[i]; if(++this.k >= this.n){ this.port.postMessage(10*Math.log10(this.acc/this.k + 1e-12)); this.acc = 0; this.k = 0; } } }
-    return true;
-  }
+function beep(freq = 880, dur = 0.07, when = 0, vol = 0.25){
+  if (!actx) return;
+  const t = actx.currentTime + when, o = actx.createOscillator(), g = actx.createGain();
+  o.frequency.value = freq; g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  o.connect(g).connect(actx.destination); o.start(t); o.stop(t + dur + 0.02);
 }
-registerProcessor('lvl', Lvl);`;
+let speaking = false, mutedUntil = 0;
+function say(text){
+  if (!('speechSynthesis' in window)) return;
+  try{
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text); u.lang = 'en-GB'; u.rate = 1.05;
+    speaking = true;
+    const done = () => { if (!speaking) return; speaking = false; mutedUntil = performance.now() + 400; if (spotter) spotter.reset(); };
+    u.onend = done; u.onerror = done; speechSynthesis.speak(u); setTimeout(done, 8000);
+  }catch(e){ speaking = false; }
+}
 
-async function start(){
+// ---------- counting ----------
+function add(source){
+  const it = items[cur]; it.count++; const c = it.count;
+  if (S.vibrate && navigator.vibrate) try{ navigator.vibrate(40); }catch(e){}
+  if (it.target && c === it.target){
+    beep(660,.12,0); beep(880,.12,.13); beep(1100,.2,.26);
+    const nx = cur + 1 < items.length ? cur + 1 : -1;
+    if (S.autoNext && nx >= 0){
+      if (S.speakTarget) say(`${c} done. Next, ${items[nx].name}.`);
+      save(); flash(); select(nx); return;
+    }
+    if (S.speakTarget) say(S.autoNext ? `${c} done. All complete.` : `${c} done.`);
+  } else if (S.speakEvery && c % S.speakEvery === 0 && source === 'voice') say(String(c));
+  else if (S.beepEvery && c % S.beepEvery === 0) beep(S.beepEvery === 1 ? 1000 : 880, 0.06);
+  save(); render(); flash();
+}
+$('card').onclick = () => { ensureCtx(); add('tap'); };
+$('minus').onclick = () => { const it = items[cur]; if (it.count > 0){ it.count--; save(); render(); } };
+$('reset').onclick = () => { items[cur].count = 0; save(); render(); };
+$('next').onclick = () => select((cur + 1) % items.length);
+$('prev').onclick = () => select((cur - 1 + items.length) % items.length);
+
+// ---------- microphone ----------
+let stream = null, srcNode = null, procNode = null, sink = null, onAudio = null, wakeLock = null, level = -100;
+const WORKLET = `class Tap extends AudioWorkletProcessor{constructor(){super();this.b=new Float32Array(1024);this.n=0}
+process(i){const c=i[0]&&i[0][0];if(c){for(let k=0;k<c.length;k++){this.b[this.n++]=c[k];if(this.n===1024){this.port.postMessage(this.b.slice());this.n=0}}}return true}}
+registerProcessor('tap',Tap);`;
+async function openMic(){
+  if (stream) return true;
   showErr('');
-  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
-    showErr('This browser can’t use the microphone here. Open the page over https:// in Chrome.'); return;
-  }
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){ showErr('This browser can’t use the microphone here. Open the page from an https:// address in Chrome.'); return false; }
   const ctx = ensureCtx();
+  try{ stream = await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true, noiseSuppression:!!S.ns, autoGainControl:false, channelCount:1}}); }
+  catch(e){ showErr('Microphone permission was refused or is unavailable (' + e.name + '). Allow the microphone for this site in Chrome’s site settings, then try again.'); return false; }
+  srcNode = ctx.createMediaStreamSource(stream);
+  sink = ctx.createGain(); sink.gain.value = 0; sink.connect(ctx.destination);
+  const deliver = buf => { let e = 0; for (let i = 0; i < buf.length; i++) e += buf[i] * buf[i]; level = 10 * Math.log10(e / buf.length + 1e-12); onAudio && onAudio(buf); };
   try{
-    stream = await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true, noiseSuppression:!!S.ns, autoGainControl:false, channelCount:1}});
+    await ctx.audioWorklet.addModule(URL.createObjectURL(new Blob([WORKLET], {type:'application/javascript'})));
+    procNode = new AudioWorkletNode(ctx, 'tap'); procNode.port.onmessage = e => deliver(e.data);
   }catch(e){
-    showErr('Microphone permission was refused or is unavailable (' + e.name + '). Allow the mic for this site in Chrome’s site settings and try again.'); return;
+    procNode = ctx.createScriptProcessor(1024, 1, 1); procNode.onaudioprocess = ev => deliver(new Float32Array(ev.inputBuffer.getChannelData(0)));
   }
-  src = ctx.createMediaStreamSource(stream);
-  const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 150;   // cut engine/road rumble
-  const lp = ctx.createBiquadFilter(); lp.type = 'lowpass';  lp.frequency.value = 3800;  // keep the voice band
-  src.connect(hp).connect(lp);
-  try{
-    const url = URL.createObjectURL(new Blob([WORKLET], {type:'application/javascript'}));
-    await ctx.audioWorklet.addModule(url);
-    node = new AudioWorkletNode(ctx, 'lvl');
-    node.port.onmessage = e => onFrame(e.data);
-    lp.connect(node);
-    const sink = ctx.createGain(); sink.gain.value = 0; node.connect(sink).connect(ctx.destination);
-  }catch(e){
-    // Fallback for older browsers
-    const sp = ctx.createScriptProcessor(1024, 1, 1);
-    const per = Math.round(ctx.sampleRate/100); let acc=0, k=0;
-    sp.onaudioprocess = ev => { const d = ev.inputBuffer.getChannelData(0); for(let i=0;i<d.length;i++){ acc+=d[i]*d[i]; if(++k>=per){ onFrame(10*Math.log10(acc/k+1e-12)); acc=0; k=0; } } };
-    lp.connect(sp); const sink = ctx.createGain(); sink.gain.value = 0; sp.connect(sink).connect(ctx.destination);
-    node = sp;
-  }
-  resetDet(); listening = true; pausedUntil = performance.now() + 600; // ignore the first instant while noise is learnt
-  await keepAwake();
-  setStatus(); uiTick();
+  srcNode.connect(procNode).connect(sink);
+  return true;
+}
+function closeMic(){
+  onAudio = null;
+  try{ stream && stream.getTracks().forEach(t => t.stop()); srcNode && srcNode.disconnect(); procNode && procNode.disconnect(); }catch(e){}
+  stream = srcNode = procNode = null; level = -100;
+}
+async function keepAwake(){ try{ if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); }catch(e){} }
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && listening){ keepAwake(); ensureCtx(); } });
+
+// ---------- live listening ----------
+let listening = false, fstream = null, norm = null, spotter = null, heard = false, quietFrames = 0;
+function armSpotter(){
+  const m = models().models[items[cur].id];
+  spotter = m ? new E.Spotter(m.templates, m.thr) : null;
+  if (spotter) spotter.limit = m.thr;
+  note(spotter ? 'Listening — recite as normal.' : 'This prayer isn’t trained yet — only manual taps will count.');
+}
+async function start(){
+  if (!(await openMic())) return;
+  $('main').textContent = 'Preparing…';
+  await new Promise(r => setTimeout(r, 30));
+  const mm = models();
+  fstream = new E.FeatureStream(actx.sampleRate, {sens: S.sens});
+  norm = mm.std ? new E.LiveNormaliser(mm.std) : null;
+  armSpotter();
+  fstream.onFrame = fr => {
+    if (!fr.ready) return;
+    if (fr.speech){ heard = true; quietFrames = 0; } else quietFrames++;
+    if (!spotter || !norm) return;
+    const sc = spotter.step(norm.apply(fr));
+    if (sc !== null){ add('voice'); note(`✓ Counted (match ${sc.toFixed(2)}, limit ${spotter ? spotter.limit.toFixed(2) : ''})`); spotter && (spotter.recent = Infinity); heard = false; }
+    else if (heard && quietFrames === 75){   // 1.5 s after speech with no count
+      const r = spotter.recent; heard = false; spotter.recent = Infinity;
+      note(r < Infinity ? `Heard speech — not counted (match ${r.toFixed(2)}, needs below ${spotter.limit.toFixed(2)})` : 'Heard speech — too short to be the prayer, not counted');
+    }
+  };
+  onAudio = buf => { if (speaking || performance.now() < mutedUntil) return; fstream.push(buf); };
+  listening = true; await keepAwake();
   $('main').textContent = '■ Stop listening'; $('main').classList.add('stop');
-  note('Learning background noise… then just recite.');
+  tick();
 }
 function stop(){
-  listening = false;
-  try{ stream && stream.getTracks().forEach(t => t.stop()); }catch(e){}
-  try{ node && node.disconnect(); src && src.disconnect(); }catch(e){}
-  stream = node = src = null;
-  if(wakeLock){ try{ wakeLock.release(); }catch(e){} wakeLock = null; }
-  $('main').textContent = '🎙 Start listening'; $('main').classList.remove('stop');
-  setStatus(); note('Leave a short breath between repetitions.');
+  listening = false; closeMic(); spotter = null;
+  if (wakeLock){ try{ wakeLock.release(); }catch(e){} wakeLock = null; }
+  $('main').textContent = '🎙 Start listening'; $('main').classList.remove('stop'); note('');
+  setStatus();
 }
 $('main').onclick = () => listening ? stop() : start();
 
-async function keepAwake(){
-  try{ if('wakeLock' in navigator){ wakeLock = await navigator.wakeLock.request('screen'); } }catch(e){}
-}
-document.addEventListener('visibilitychange', () => {
-  if(document.visibilityState === 'visible' && listening){ keepAwake(); ensureCtx(); }
-});
-
-// ---------- Status + meter ----------
 function setStatus(){
   const dot = $('dot'); dot.className = 'dot';
-  if(!listening){ $('statusText').textContent = 'Not listening'; return; }
-  if(speaking){ dot.classList.add('paused'); $('statusText').textContent = 'Speaking — listening paused'; return; }
-  if(det.state === 'speech'){ dot.classList.add('on'); $('statusText').textContent = 'Hearing you…'; }
+  if (!listening){ $('statusText').textContent = 'Not listening'; return; }
+  if (speaking){ dot.classList.add('paused'); $('statusText').textContent = 'Speaking — listening paused'; return; }
+  if (fstream && fstream.noise === null){ $('statusText').textContent = 'Learning background noise…'; return; }
+  if (fstream && fstream.speech){ dot.classList.add('on'); $('statusText').textContent = 'Hearing you…'; }
   else $('statusText').textContent = 'Listening';
 }
-const toPct = db => Math.max(0, Math.min(100, (db + 90) / 80 * 100));
-function uiTick(){
-  if(!listening){ $('fill').style.width = '0'; return; }
-  $('fill').style.width = toPct(lastDb) + '%';
-  if(det.noise !== null){ $('noiseMark').style.left = toPct(det.noise) + '%'; $('thrMark').style.left = toPct(det.noise + S.sens) + '%'; }
-  setStatus();
-  requestAnimationFrame(uiTick);
-}
-function note(t){ $('sub').textContent = t; clearTimeout(note.t); if(t.startsWith('Learning')||t.startsWith('Background')) note.t = setTimeout(()=>{ if(listening) $('sub').textContent = 'Listening — recite with a short pause between each.'; }, 2500); }
+const pct = db => Math.max(0, Math.min(100, (db + 90) / 80 * 100));
+function tick(){ if (!listening){ $('fill').style.width = '0'; return; } $('fill').style.width = pct(level) + '%'; setStatus(); requestAnimationFrame(tick); }
+function note(t){ $('sub').textContent = t; }
 function showErr(t){ const e = $('err'); e.textContent = t; e.style.display = t ? 'block' : 'none'; }
 
-// ---------- Sheets ----------
+// ---------- training ----------
+let trItem = null, recording = false, recTimer = null;
+function openTrain(it){
+  trItem = it; $('trName').textContent = 'Train ' + it.name; $('trArabic').textContent = it.ar; $('trTranslit').textContent = it.translit || '';
+  $('trMsg').textContent = ''; renderSamples(); openSheet('trainSheet');
+}
+function renderSamples(){
+  const list = samples[trItem.id] || [], box = $('samples'); box.innerHTML = '';
+  list.forEach((s, i) => {
+    const d = document.createElement('div'); d.className = 'sample';
+    d.innerHTML = `<span>Recording ${i + 1} · ${s.secs.toFixed(1)} s</span><button aria-label="Delete">✕</button>`;
+    d.querySelector('button').onclick = () => { list.splice(i, 1); saveSamples(); renderSamples(); };
+    box.appendChild(d);
+  });
+  const q = $('qual');
+  if (list.length < 2){ q.textContent = list.length ? 'Record at least one more (3 recommended).' : ''; q.style.color = 'var(--muted)'; return; }
+  const m = models().models[trItem.id];
+  if (!m){ q.textContent = ''; return; }
+  const v = m.intra;
+  q.style.color = v < 0.2 ? 'var(--accent)' : v < 0.35 ? 'var(--accent2)' : 'var(--danger)';
+  q.textContent = v < 0.2 ? `✓ Ready — your recordings are consistent.${list.length < 3 ? ' A 3rd recording will make it more reliable.' : ''}`
+    : v < 0.35 ? 'OK — recordings vary a bit. Another recording will help.'
+    : 'Recordings differ a lot. Delete the odd one out (check the lengths) and record again.';
+  if (m.inter !== null && m.inter < 0.45) q.textContent += ' Note: it sounds similar to another trained prayer.';
+}
+async function record(){
+  if (recording){ finishRec(true); return; }
+  if (listening) stop();
+  if (!(await openMic())) return;
+  recording = true; const frames = []; let speechN = 0, quiet = 0, after = -1;
+  const fs = new E.FeatureStream(actx.sampleRate, {sens: S.sens});
+  fs.onFrame = fr => {
+    if (!fr.ready) return;
+    if (after < 0){ after = 0; beep(1000, 0.12); $('trMsg').textContent = 'Recite now…'; return; }
+    if (++after <= 15) return;                       // skip our own beep
+    frames.push(fr);
+    if (fr.speech){ speechN++; quiet = 0; } else if (speechN >= 10 && ++quiet >= 100) finishRec(false);   // 2 s pause after reciting
+    if (frames.length > 50 * 40) finishRec(false);                                                         // 40 s max
+  };
+  record.frames = frames;
+  $('recBtn').textContent = '■ Stop'; $('recBtn').classList.add('live'); $('trMsg').textContent = 'Wait for the beep…';
+  onAudio = buf => fs.push(buf);
+  const meter = () => { if (!recording) { $('trFill').style.width = '0'; return; } $('trFill').style.width = pct(level) + '%'; requestAnimationFrame(meter); }; meter();
+}
+function finishRec(manual){
+  if (!recording) return;
+  recording = false; closeMic();
+  $('recBtn').textContent = '🎙 Record'; $('recBtn').classList.remove('live');
+  const smp = E.centreSample(record.frames || []);
+  if (!smp){ $('trMsg').textContent = 'Didn’t catch a full recitation — please try again, a little louder or closer.'; return; }
+  (samples[trItem.id] = samples[trItem.id] || []).push(smp); saveSamples();
+  $('trMsg').textContent = `Saved (${smp.secs.toFixed(1)} s).`; beep(880, 0.08); beep(1320, 0.1, 0.1);
+  renderSamples(); render();
+}
+$('recBtn').onclick = () => { ensureCtx(); record(); };
+$('trDone').onclick = () => { if (recording) finishRec(true); $('trainSheet').classList.remove('open'); render(); };
+$('trainNow').onclick = () => openTrain(items[cur]);
+
+// ---------- sheets ----------
 function openSheet(id){ $(id).classList.add('open'); }
-document.querySelectorAll('.sheet').forEach(s => {
-  s.addEventListener('click', e => { if(e.target === s || e.target.hasAttribute('data-close')){ s.classList.remove('open'); render(); } });
-});
+document.querySelectorAll('.sheet').forEach(s => s.addEventListener('click', e => {
+  if (e.target.hasAttribute('data-close') || (e.target === s && s.id !== 'trainSheet')){ s.classList.remove('open'); render(); }
+}));
 $('listBtn').onclick = () => { renderItems(); openSheet('listSheet'); };
 $('setBtn').onclick = () => { renderSettings(); openSheet('setSheet'); };
-
 function renderItems(){
   const box = $('items'); box.innerHTML = '';
   items.forEach((it, i) => {
     const d = document.createElement('div'); d.className = 'item';
-    d.innerHTML = `<input class="ar" placeholder="Arabic text"><input class="nm" placeholder="Name (spoken in announcements)"><input class="tg" type="number" min="0" inputmode="numeric" placeholder="Target"><button class="del" aria-label="Delete">✕</button>`;
-    const [ar, nm, tg] = d.querySelectorAll('input');
-    ar.value = it.ar; nm.value = it.name; tg.value = it.target || '';
-    ar.oninput = () => { it.ar = ar.value; save(); };
-    nm.oninput = () => { it.name = nm.value; save(); };
-    tg.oninput = () => { it.target = Math.max(0, parseInt(tg.value) || 0); save(); };
-    d.querySelector('.del').onclick = () => { if(items.length > 1){ items.splice(i,1); if(cur >= items.length) cur = items.length-1; save(); renderItems(); } };
+    const n = (samples[it.id] || []).length;
+    d.innerHTML = `<textarea class="ar" placeholder="Arabic text"></textarea>
+      <input class="tl" placeholder="Transliteration (optional)">
+      <div class="g"><input class="nm" placeholder="Name"><input class="tg" type="number" min="0" inputmode="numeric" placeholder="Target"></div>
+      <div class="acts"><button class="btn tr">🎙 Train (${n} recording${n === 1 ? '' : 's'})</button><button class="btn del" aria-label="Delete">✕</button></div>`;
+    const ar = d.querySelector('.ar'), tl = d.querySelector('.tl'), nm = d.querySelector('.nm'), tg = d.querySelector('.tg');
+    ar.value = it.ar || ''; tl.value = it.translit || ''; nm.value = it.name; tg.value = it.target || '';
+    ar.oninput = () => { it.ar = ar.value; save(); }; tl.oninput = () => { it.translit = tl.value; save(); };
+    nm.oninput = () => { it.name = nm.value; save(); }; tg.oninput = () => { it.target = Math.max(0, parseInt(tg.value) || 0); save(); };
+    d.querySelector('.tr').onclick = () => { $('listSheet').classList.remove('open'); openTrain(it); };
+    d.querySelector('.del').onclick = () => {
+      if (items.length < 2) return;
+      if (!d.dataset.armed){ d.dataset.armed = 1; d.querySelector('.del').textContent = 'Sure?'; return; }
+      delete samples[it.id]; saveSamples(); items.splice(i, 1); if (cur >= items.length) cur = items.length - 1; save(); renderItems(); render();
+    };
     box.appendChild(d);
   });
 }
-$('addItem').onclick = () => { items.push({ar:'', name:'New zikr', target:100, count:0}); save(); renderItems(); };
-$('resetAll').onclick = () => { items.forEach(x => x.count = 0); cur = 0; save(); render(); renderItems(); };
-
+$('addItem').onclick = () => { items.push({id: uid(), name: 'Prayer ' + (items.length + 1), ar: '', translit: '', target: 100, count: 0}); save(); renderItems(); };
+$('resetAll').onclick = () => { items.forEach(x => x.count = 0); cur = 0; save(); render(); };
 function renderSettings(){
-  const bindRange = (id, lbl, fmt) => { const el = $(id); el.value = S[id]; const upd = () => { S[id] = +el.value; $(lbl).textContent = fmt(S[id]); save(); }; el.oninput = upd; upd(); };
-  bindRange('sens', 'sensV', v => v + ' dB');
-  bindRange('gap', 'gapV', v => v + ' ms');
-  bindRange('minLen', 'minV', v => v + ' ms');
-  ['ns','split','speakTarget','autoNext','vibrate'].forEach(id => { const el = $(id); el.checked = !!S[id]; el.onchange = () => { S[id] = el.checked; save(); }; });
+  const rng = (id, lbl, fmt) => { const el = $(id); el.value = S[id]; const u = () => { S[id] = +el.value; $(lbl).textContent = fmt(S[id]); save(); }; el.oninput = u; u(); };
+  rng('adjust', 'adjV', v => v === 0 ? 'default' : v < 0 ? 'stricter ' + (-v).toFixed(2) : 'looser +' + v.toFixed(2));
+  rng('sens', 'sensV', v => v + ' dB');
+  $('adjust').onchange = () => { if (listening) armSpotter(); };
+  ['ns','speakTarget','autoNext','vibrate'].forEach(id => { const el = $(id); el.checked = !!S[id]; el.onchange = () => { S[id] = el.checked; save(); }; });
   ['beepEvery','speakEvery'].forEach(id => { const el = $(id); el.value = String(S[id]); el.onchange = () => { S[id] = +el.value; save(); }; });
 }
 
-// test hook (used for automated checks only)
-window.__zv = { get count(){ return items.reduce((a,x)=>a+x.count,0); }, items: () => items, S, det };
-
+window.__zv = { items: () => items, samples: () => samples, get count(){ return items.reduce((a, x) => a + x.count, 0); } };
 render();
 })();
 </script>
